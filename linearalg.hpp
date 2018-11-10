@@ -9,7 +9,7 @@ vector<double> add(vector<double> &a,vector<double> &b, double alpha){  // a+alp
     }
     int n=a.size();
     vector<double> c(n);
-    #pragma omp paraintel for
+    #pragma omp parallel for
     for(int i=0;i<n;i++){
         c[i]=a[i]+alpha*b[i];
     }
