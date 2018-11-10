@@ -1,2 +1,2 @@
 # Parallel-Computing-Project
-Parallel implementation of the iterative algorithm for conjugate gradient method.
+Parallel implementation of an iterative algorithm for conjugate gradient method.
