@@ -2,18 +2,16 @@
 #include<omp.h>
 using namespace std;
 
-vector<double> add(vector<double> &a,vector<double> &b, double alpha){  // a+alpha*b
-    if(a.size()!=b.size()){                                             // copy of vector c is not made 
-        cout<<"Addition of incompatible vectors.\n";                    // due to return value optimization
+void add(vector<double> &c,vector<double> &a,vector<double> &b, double alpha){  // c=a+alpha*b
+    if(a.size()!=b.size()){                                             
+        cout<<"Addition of incompatible vectors.\n";                   
         exit(0);
     }
     int n=a.size();
-    vector<double> c(n);
     #pragma omp parallel for
     for(int i=0;i<n;i++){
         c[i]=a[i]+alpha*b[i];
     }
-    return c;
 }
 
 double dot(vector<double> &a,vector<double> &b){    // a^T * b
@@ -30,9 +28,8 @@ double dot(vector<double> &a,vector<double> &b){    // a^T * b
     return sum;
 }
 
-vector<double> MatVecMult(vector<double> &A,vector<int> &iA,vector<int> &jA, vector<double> &x){ // res=A*x
+void MatVecMult(vector<double> &res,vector<double> &A,vector<int> &iA,vector<int> &jA, vector<double> &x){ // res=A*x
     int n=x.size();
-    vector<double> res(n);
     #pragma omp parallel for
     for(int i=0;i<n;i++){
         res[i]=0;
@@ -41,7 +38,6 @@ vector<double> MatVecMult(vector<double> &A,vector<int> &iA,vector<int> &jA, vec
             res[i]+=A[idx]*x[jA[idx]];
         }
     }
-    return res;
 }
 
 void vector_copy(vector<double> &in,vector<double> &out){ // out <- in
@@ -56,6 +52,31 @@ void vector_copy(vector<double> &in,vector<double> &out){ // out <- in
     }
 }
 
-void parallel_Conjugate_Gradient(vector<double> &A, vector<int> &iA, vector<int> &jA,vector<double> &b,vector<double> init_x,int iterations){
-    
+vector<double> parallel_Conjugate_Gradient(vector<double> &A, vector<int> &iA, vector<int> &jA,
+vector<double> &b,vector<double> init_x,int iterations){
+
+    // Initialize    
+    int n=init_x.size();
+    vector<double> matprod(n),x(n),r(n),p(n),rtemp(n);
+    vector_copy(init_x,x);
+    MatVecMult(matprod,A,iA,jA,x);
+    add(r,b,matprod,-1.0);
+    vector_copy(r,p);
+    int it=0;
+    double alpha,beta,r_norm;
+
+    while(it<iterations){
+        it++;
+        MatVecMult(matprod,A,iA,jA,p);
+        r_norm=dot(r,r);
+        alpha=r_norm/dot(p,matprod);
+        add(x,x,p,alpha);
+        add(rtemp,r,matprod,-alpha);
+        beta=dot(rtemp,rtemp)/r_norm;
+        add(p,rtemp,p,beta);
+        vector_copy(rtemp,r);
+    }
+
+    return x;
 }
+
