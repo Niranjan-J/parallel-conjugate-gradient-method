@@ -52,6 +52,60 @@ void vector_copy(vector<double> &in,vector<double> &out){ // out <- in
     }
 }
 
+//A is n by m
+//A_T is m by n
+void matrix_transpose(int n, int m, int nz, vector<double> &A, vector<int> &jA, vector<int> &iA,
+                      vector<double> &A_T, vector<int> &jA_T, vector<int> &iA_T, bool describe = false)
+{
+    int i, j, k, l;
+    for (i = 0; i <= m; i++)
+        iA_T[i] = 0;
+
+    for (i = 0; i < nz; i++)
+        iA_T[jA[i] + 1]++;
+
+    for (i = 0; i < m; i++)
+        iA_T[i + 1] += iA_T[i];
+
+    auto ptr = iA.begin();
+
+    for (i = 0; i < n; i++, ptr++)
+        for (j = *ptr; j < *(ptr + 1); j++)
+        {
+            k = jA[j];
+            l = iA_T[k]++;
+            jA_T[l] = i;
+            A_T[l] = A[j];
+        }
+
+    for (i = m; i > 0; i--)
+        iA_T[i] = iA_T[i - 1];
+
+    iA_T[0] = 0;
+
+    if (describe)
+    {
+
+        for (auto u : A_T)
+        {
+            cout << u << " ";
+        }
+        cout << endl;
+
+        for (auto u : iA_T)
+        {
+            cout << u << " ";
+        }
+        cout << endl;
+
+        for (auto u : jA_T)
+        {
+            cout << u << " ";
+        }
+        cout << endl;
+    }
+}
+
 vector<double> parallel_Conjugate_Gradient(vector<double> &A, vector<int> &iA, vector<int> &jA,
 vector<double> &b,vector<double> init_x,int iterations){
 
