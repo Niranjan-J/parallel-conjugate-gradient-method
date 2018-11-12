@@ -110,6 +110,19 @@ void matrix_transpose( vector<double> &A,  vector<int> &iA,vector<int> &jA,
     }
 }
 
+
+bool is_symmetric(vector<double> &A, vector<double> &A_T)
+{
+    bool res=true;
+    int nz=A.size();
+
+    #pragma omp parallel for reduction(&&:res)
+    for(int i=0;i<nz;i++){
+        res=res&&(A[i]==A_T[i]);
+    }
+    return res;
+}
+
 vector<double> parallel_Conjugate_Gradient(vector<double> &A, vector<int> &iA, vector<int> &jA,
 vector<double> &b,vector<double> init_x,int iterations){
 

@@ -20,5 +20,10 @@ int main(){
     vector<int> jA1_T(A1col.size());//nz
 
     matrix_transpose(A1,  A1row,A1col, A1_T,  iA1_T,jA1_T,true);
+    // bool res=is_symmetric(A1,A1_T);
+    // if(res)
+    // {
+    //     cout<< "Symmetric"<<endl;
+    // }
     return 0;
 }
