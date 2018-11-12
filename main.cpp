@@ -19,6 +19,6 @@ int main(){
     vector<int> iA1_T(A1row.size());//n+1
     vector<int> jA1_T(A1col.size());//nz
 
-    matrix_transpose(A1row.size(), A1.size(), A1, A1col, A1row, A1_T,  jA1_T,iA1_T,true);
+    matrix_transpose(A1,  A1row,A1col, A1_T,  iA1_T,jA1_T,true);
     return 0;
 }

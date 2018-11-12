@@ -54,10 +54,14 @@ void vector_copy(vector<double> &in,vector<double> &out){ // out <- in
 
 //A is n by n
 //A_T is n by n
-void matrix_transpose(int n, int nz, vector<double> &A, vector<int> &jA, vector<int> &iA,
-                      vector<double> &A_T, vector<int> &jA_T, vector<int> &iA_T, bool describe = false)
+void matrix_transpose( vector<double> &A,  vector<int> &iA,vector<int> &jA,
+                      vector<double> &A_T,  vector<int> &iA_T,vector<int> &jA_T, bool describe = false)
 {
     int i, j, k, l;
+
+    int n=iA.size();
+    int nz=A.size();
+
     for (i = 0; i <= n; i++)
         iA_T[i] = 0;
 
