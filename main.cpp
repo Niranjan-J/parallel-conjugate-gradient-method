@@ -11,14 +11,14 @@ int main(){
     for(int i=0;i<x_out.size();i++) cout<<x_out[i]<<endl;
 
     cout<<endl<<"Testing transpose()"<<endl;
-    vector<double> A1{1,3,4,5,6};//n*m
-    vector<int> A1row{0,2,5};
-    vector<int> A1col{0,2,0,1,2};
+    vector<double> A1{1,3,4,5,6,7,8,9};//n*n
+    vector<int> A1row{0,2,5,8};//n+1
+    vector<int> A1col{0,2,0,1,2,0,1,2};//nz
 
-    vector<double> A1_T(A1.size());//nnz
-    vector<int> iA1_T(4);//m+1
-    vector<int> jA1_T(A1col.size());//nnz
+    vector<double> A1_T(A1.size());//nz
+    vector<int> iA1_T(A1row.size());//n+1
+    vector<int> jA1_T(A1col.size());//nz
 
-    matrix_transpose(2, 3, A1.size(), A1, A1col, A1row, A1_T,  jA1_T,iA1_T,true);
+    matrix_transpose(A1row.size(), A1.size(), A1, A1col, A1row, A1_T,  jA1_T,iA1_T,true);
     return 0;
 }

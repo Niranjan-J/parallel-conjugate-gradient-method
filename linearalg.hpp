@@ -52,19 +52,19 @@ void vector_copy(vector<double> &in,vector<double> &out){ // out <- in
     }
 }
 
-//A is n by m
-//A_T is m by n
-void matrix_transpose(int n, int m, int nz, vector<double> &A, vector<int> &jA, vector<int> &iA,
+//A is n by n
+//A_T is n by n
+void matrix_transpose(int n, int nz, vector<double> &A, vector<int> &jA, vector<int> &iA,
                       vector<double> &A_T, vector<int> &jA_T, vector<int> &iA_T, bool describe = false)
 {
     int i, j, k, l;
-    for (i = 0; i <= m; i++)
+    for (i = 0; i <= n; i++)
         iA_T[i] = 0;
 
     for (i = 0; i < nz; i++)
         iA_T[jA[i] + 1]++;
 
-    for (i = 0; i < m; i++)
+    for (i = 0; i < n; i++)
         iA_T[i + 1] += iA_T[i];
 
     auto ptr = iA.begin();
@@ -78,7 +78,7 @@ void matrix_transpose(int n, int m, int nz, vector<double> &A, vector<int> &jA, 
             A_T[l] = A[j];
         }
 
-    for (i = m; i > 0; i--)
+    for (i = n; i > 0; i--)
         iA_T[i] = iA_T[i - 1];
 
     iA_T[0] = 0;
