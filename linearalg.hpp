@@ -2,7 +2,23 @@
 #include<omp.h>
 using namespace std;
 
-void add(vector<double> &c,vector<double> &a,vector<double> &b, double alpha){  // c=a+alpha*b
+// out <- in 
+// O(1)
+void vector_copy(vector<double> &in,vector<double> &out){
+    if(in.size()!=out.size()){
+        cout<<"Copying of incompatible vectors.\n";
+        exit(0);
+    }
+    int n=in.size();
+    #pragma omp parallel for
+    for(int i=0;i<n;i++){
+        out[i]=in[i];
+    }
+}
+
+// c=a+alpha*b
+// O(1)
+void add(vector<double> &c,vector<double> &a,vector<double> &b, double alpha){
     if(a.size()!=b.size()){                                             
         cout<<"Addition of incompatible vectors.\n";                   
         exit(0);
@@ -14,7 +30,9 @@ void add(vector<double> &c,vector<double> &a,vector<double> &b, double alpha){  
     }
 }
 
-double dot(vector<double> &a,vector<double> &b){    // a^T * b
+// a^T * b
+// O(log(n))
+double dot(vector<double> &a,vector<double> &b){
     if(a.size()!=b.size()){
         cout<<"Dot product of incompatible vectors.\n";
         exit(0);
@@ -28,35 +46,30 @@ double dot(vector<double> &a,vector<double> &b){    // a^T * b
     return sum;
 }
 
-void MatVecMult(vector<double> &res,vector<double> &A,vector<int> &iA,vector<int> &jA, vector<double> &x){ // res=A*x
+// res=A*x
+// O(n)
+void MatVecMult(vector<double> &res,vector<double> &A,vector<int> &iA,vector<int> &jA,
+vector<double> &x,bool describe=false){
     int n=x.size();
     #pragma omp parallel for
     for(int i=0;i<n;i++){
         res[i]=0;
-        #pragma omp parallel for
         for(int idx=iA[i];idx<iA[i+1];idx++){
             res[i]+=A[idx]*x[jA[idx]];
         }
     }
-}
-
-void vector_copy(vector<double> &in,vector<double> &out){ // out <- in
-    if(in.size()!=out.size()){
-        cout<<"Copying of incompatible vectors.\n";
-        exit(0);
-    }
-    int n=in.size();
-    #pragma omp parallel for
-    for(int i=0;i<n;i++){
-        out[i]=in[i];
+    if(describe){
+        cout<<"Matrix-Vector Product :\n";
+        for(auto u:res) cout<<u<<' ';
+        cout <<"\n\n";
     }
 }
 
 //A is n by n
 //A_T is n by n
-void matrix_transpose( vector<double> &A,  vector<int> &iA,vector<int> &jA,
-                      vector<double> &A_T,  vector<int> &iA_T,vector<int> &jA_T, bool describe = false)
-{
+// O(n^2)
+void sparse_matrix_transpose( vector<double> &A,  vector<int> &iA,vector<int> &jA,
+vector<double> &A_T,  vector<int> &iA_T,vector<int> &jA_T, bool describe = false){
     int i, j, k, l;
 
     int n=iA.size();
@@ -89,7 +102,7 @@ void matrix_transpose( vector<double> &A,  vector<int> &iA,vector<int> &jA,
 
     if (describe)
     {
-
+        cout<<"Sparse Matrix Transpose :\n";
         for (auto u : A_T)
         {
             cout << u << " ";
@@ -106,13 +119,13 @@ void matrix_transpose( vector<double> &A,  vector<int> &iA,vector<int> &jA,
         {
             cout << u << " ";
         }
-        cout << endl;
+        cout <<"\n\n";
     }
 }
 
-
-bool is_symmetric(vector<double> &A, vector<double> &A_T)
-{
+//Checks for symmetric matrix
+// O(log(n))
+bool is_symmetric(vector<double> &A, vector<double> &A_T){
     bool res=true;
     int nz=A.size();
 
@@ -123,8 +136,10 @@ bool is_symmetric(vector<double> &A, vector<double> &A_T)
     return res;
 }
 
-vector<double> parallel_Conjugate_Gradient(vector<double> &A, vector<int> &iA, vector<int> &jA,
-vector<double> &b,vector<double> init_x,int iterations){
+//Conjugate Gradient Method
+// O(n*iterations)
+void parallel_Conjugate_Gradient(vector<double> &x_out,vector<double> &A, vector<int> &iA, vector<int> &jA,
+vector<double> &b,vector<double> init_x,int iterations,double epsilon){
 
     // Initialize    
     int n=init_x.size();
@@ -134,7 +149,7 @@ vector<double> &b,vector<double> init_x,int iterations){
     add(r,b,matprod,-1.0);
     vector_copy(r,p);
     int it=0;
-    double alpha,beta,r_norm;
+    double alpha,beta,r_norm,rtemp_norm;
 
     while(it<iterations){
         it++;
@@ -143,11 +158,64 @@ vector<double> &b,vector<double> init_x,int iterations){
         alpha=r_norm/dot(p,matprod);
         add(x,x,p,alpha);
         add(rtemp,r,matprod,-alpha);
-        beta=dot(rtemp,rtemp)/r_norm;
+        rtemp_norm=dot(rtemp,rtemp);
+        if(rtemp_norm<epsilon) break;
+        beta=rtemp_norm/r_norm;
         add(p,rtemp,p,beta);
         vector_copy(rtemp,r);
     }
 
-    return x;
+    vector_copy(x,x_out);
+}
+
+//A^T*A
+// O(n^3)
+void A_TA(vector<double> &A_T,  vector<int> &iA_T,vector<int> &jA_T,
+vector<double> &B, vector<int> &iB,vector<int> &jB,bool describe=false){
+    
+    int n=iB.size()-1;
+
+    #pragma omp parllel for
+    for(int i=0;i<n+1;i++)
+        iB[i]=0;
+
+    for(int i=0;i<n;i++){
+        for(int j=0;j<n;j++){
+            int k=iA_T[i];
+            int l=iA_T[j];
+            double sum=0;
+            while(k<iA_T[i+1] && l<iA_T[j+1]){
+                if(jA_T[k]>jA_T[l]) l++;
+                else if(jA_T[k]<jA_T[l]) k++;
+                else{
+                    sum+=A_T[k]*A_T[l];
+                    l++;
+                    k++;
+                }                
+            }
+            if(sum>0){
+                B.push_back(sum);
+                jB.push_back(j);
+                iB[i+1]++;
+            }
+        }
+    }
+    for(int i=0;i<n;i++) iB[i+1]+=iB[i];
+
+    if (describe){
+        cout<<"A^T*A :\n";
+        for (auto u : B){
+            cout << u << " ";
+        }
+        cout << endl;
+        for (auto u : iB){
+            cout << u << " ";
+        }
+        cout << endl;
+        for (auto u : jB){
+            cout << u << " ";
+        }
+        cout <<"\n\n";
+    }
 }
 
