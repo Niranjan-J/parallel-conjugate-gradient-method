@@ -20,7 +20,8 @@ void vector_copy(vector<double> &in,vector<double> &out){
 // O(1)
 void add(vector<double> &c,vector<double> &a,vector<double> &b, double alpha){
     if(a.size()!=b.size()){                                             
-        cout<<"Addition of incompatible vectors.\n";                   
+        cout<<"Addition of incompatible vectors.\n";
+        cout<<"Sizes are:"<<a.size()<<" "<<b.size()<<endl;                  
         exit(0);
     }
     int n=a.size();
