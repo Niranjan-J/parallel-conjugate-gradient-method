@@ -2,7 +2,7 @@
 
 // vector<vector<double>> generate_random_matrix(int n, double sparse_proportion);
 // void sparsify();
-// void generate_random_sparse_symmetric_pd_matrix();
+// void generate_random_symmetric_pd_matrix();
 
 #define element_limit 10
 
@@ -51,12 +51,38 @@ vector<vector<double>> generate_random_matrix(int n = 4, double sparse_proportio
 
 //     return A_T;
 // }
+tuple<vector<double>, vector<int>, vector<int>> sparsify(const vector<vector<double>> &M)
+{
 
-vector<vector<double>> generate_random_sparse_symmetric_pd_matrix(int n = 4, double sparse_proportion = 0.5)
+    int n = M.size();
+
+    vector<double> A;
+    vector<int> IA = {0};
+    vector<int> JA;
+    int NNZ = 0;
+
+    for (int i = 0; i < n; i++)
+    {
+        for (int j = 0; j < n; j++)
+        {
+            if (M[i][j] != 0)
+            {
+                A.push_back(M[i][j]);
+                JA.push_back(j);
+
+                NNZ++;
+            }
+        }
+        IA.push_back(NNZ);
+    }
+    return make_tuple(A, IA, JA);
+}
+
+vector<vector<double>> generate_random_symmetric_pd_matrix(int n = 4, double sparse_proportion = 0.5)
 {
     vector<vector<double>> A = generate_random_matrix(n, sparse_proportion);
 
-    //make it symmetric, A_new=0.5(A+A_T)
+    //make it symmetric, A_new=(A+A_T)
 #pragma omp parallel for collapse(2)
     for (int i = 0; i < n; i++)
     {
@@ -73,7 +99,7 @@ vector<vector<double>> generate_random_sparse_symmetric_pd_matrix(int n = 4, dou
             }
         }
     }
-    // make it diagonally dominant, A_new=A+n*I
+    // make it diagonally dominant, A_new=A+2*n*I
 #pragma omp parallel for
     for (int i = 0; i < n; i++)
     {
@@ -100,25 +126,33 @@ vector<vector<double>> generate_random_sparse_symmetric_pd_matrix(int n = 4, dou
 int main()
 {
     // generate_random_matrix();
-    vector<vector<double>> A = generate_random_sparse_symmetric_pd_matrix();
-    for (auto a : A)
+    // vector<vector<double>> A = generate_random_symmetric_pd_matrix();
+    // for (auto a : A)
+    // {
+    //     for (auto b : a)
+    //     {
+    //         cout << b << " ";
+    //     }
+    //     cout << endl;
+    // }
+
+    auto [A, iA, jA] = sparsify(generate_random_symmetric_pd_matrix(3));
+    for(auto u:A)
     {
-        for (auto b : a)
-        {
-            cout << b << " ";
-        }
-        cout << endl;
+        cout<<u<<" ";
     }
-    A = transpose(A);
-    cout << endl;
-    for (auto a : A)
+    cout<<endl;
+    for(auto u:iA)
     {
-        for (auto b : a)
-        {
-            cout << b << " ";
-        }
-        cout << endl;
+        cout<<u<<" ";
     }
+    cout<<endl;
+    for(auto u:jA)
+    {
+        cout<<u<<" ";
+    }
+    cout<<endl;
+
 
     // //Sparse Matrix A (n x n)
     // vector<double> A{21, -15, 40, -15, 75, -20, 40, -20, 88};
