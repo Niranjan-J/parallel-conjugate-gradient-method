@@ -4,6 +4,8 @@
 // void sparsify();
 // void generate_random_sparse_symmetric_pd_matrix();
 
+#define element_limit 10
+
 vector<vector<double>> generate_random_matrix(int n = 4, double sparse_proportion = 0.5)
 {
     srand(time(NULL));
@@ -24,7 +26,7 @@ vector<vector<double>> generate_random_matrix(int n = 4, double sparse_proportio
             }
             else
             {
-                A[i][j] = rand() % 100;
+                A[i][j] = rand() % element_limit; //make sure all elements are less than 10, so that we can make it diagonally dominant later
             }
         }
     }
@@ -32,28 +34,73 @@ vector<vector<double>> generate_random_matrix(int n = 4, double sparse_proportio
     return A;
 }
 
-vector<vector<double>> transpose(vector<vector<double>> &A)
+// vector<vector<double>> transpose(vector<vector<double>> &A)
+// {
+//     int n = A.size();
+
+//     vector<vector<double>> A_T(n, vector<double>(n));
+
+// #pragma omp parallel for collapse(2)
+//     for (int i = 0; i < n; i++)
+//     {
+//         for (int j = 0; j < n; j++)
+//         {
+//             A_T[j][i] = A[i][j];
+//         }
+//     }
+
+//     return A_T;
+// }
+
+vector<vector<double>> generate_random_sparse_symmetric_pd_matrix(int n = 4, double sparse_proportion = 0.5)
 {
-    int n = A.size();
+    vector<vector<double>> A = generate_random_matrix(n, sparse_proportion);
 
-    vector<vector<double>> A_T(n, vector<double>(n));
-
+    //make it symmetric, A_new=0.5(A+A_T)
 #pragma omp parallel for collapse(2)
     for (int i = 0; i < n; i++)
     {
         for (int j = 0; j < n; j++)
         {
-            A_T[j][i] = A[i][j];
+            if (j < i)
+            {
+                // A[i][j] += A[j][i];
+                // A[i][j] /= 2;
+                // A[j][i] = A[i][j];
+
+                A[i][j] += A[j][i];
+                A[j][i] = A[i][j];
+            }
         }
     }
+    // make it diagonally dominant, A_new=A+n*I
+#pragma omp parallel for
+    for (int i = 0; i < n; i++)
+    {
+        // A[i][i] /= 2;
+        // A[i][i] += element_limit * n;
 
-    return A_T;
+        A[i][i] += element_limit * n * 2;
+    }
+
+    //symmetric diagonally dominant matrix is positive definite
+
+    return A;
+
+    // #pragma omp parallel for collapse(2)
+    //     for (int i = 0; i < n; i++)
+    //     {
+    //         for (int j = 0; j < i; j++)
+    //         {
+    //             A[j][i] = A[i][j];
+    //         }
+    //     }
 }
 
 int main()
 {
     // generate_random_matrix();
-    vector<vector<double>> A = generate_random_matrix(7, 0.9);
+    vector<vector<double>> A = generate_random_sparse_symmetric_pd_matrix();
     for (auto a : A)
     {
         for (auto b : a)
@@ -62,8 +109,8 @@ int main()
         }
         cout << endl;
     }
-    A=transpose(A);
-    cout<<endl;
+    A = transpose(A);
+    cout << endl;
     for (auto a : A)
     {
         for (auto b : a)
