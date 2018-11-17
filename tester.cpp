@@ -4,28 +4,27 @@
 // void sparsify();
 // void generate_random_sparse_symmetric_pd_matrix();
 
-vector<vector<double>> generate_random_matrix(int n=4, double sparse_proportion=0.5)
+vector<vector<double>> generate_random_matrix(int n = 4, double sparse_proportion = 0.5)
 {
     srand(time(NULL));
 
     assert((sparse_proportion < 1) && (sparse_proportion > 0));
 
-    vector<vector<double>> A(n,vector<double>(n));
+    vector<vector<double>> A(n, vector<double>(n));
 
-    #pragma omp parallel for collapse(2)
+#pragma omp parallel for collapse(2)
     for (int i = 0; i < n; i++)
     {
         for (int j = 0; j < n; j++)
         {
-            
+
             if (rand() < RAND_MAX * sparse_proportion)
             {
                 A[i][j] = 0;
             }
             else
             {
-                A[i][j] = rand()%100;
-
+                A[i][j] = rand() % 100;
             }
         }
     }
@@ -33,22 +32,46 @@ vector<vector<double>> generate_random_matrix(int n=4, double sparse_proportion=
     return A;
 }
 
+vector<vector<double>> transpose(vector<vector<double>> &A)
+{
+    int n = A.size();
 
+    vector<vector<double>> A_T(n, vector<double>(n));
+
+#pragma omp parallel for collapse(2)
+    for (int i = 0; i < n; i++)
+    {
+        for (int j = 0; j < n; j++)
+        {
+            A_T[j][i] = A[i][j];
+        }
+    }
+
+    return A_T;
+}
 
 int main()
 {
     // generate_random_matrix();
-    vector<vector<double>> A= generate_random_matrix(7,0.9);
-    for (auto a:A)
+    vector<vector<double>> A = generate_random_matrix(7, 0.9);
+    for (auto a : A)
     {
-        for (auto b:a)
+        for (auto b : a)
         {
-            cout<<b<<" ";
+            cout << b << " ";
         }
-        cout<<endl;
+        cout << endl;
     }
-
-
+    A=transpose(A);
+    cout<<endl;
+    for (auto a : A)
+    {
+        for (auto b : a)
+        {
+            cout << b << " ";
+        }
+        cout << endl;
+    }
 
     // //Sparse Matrix A (n x n)
     // vector<double> A{21, -15, 40, -15, 75, -20, 40, -20, 88};
