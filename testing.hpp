@@ -102,22 +102,44 @@ vector<vector<double>> generate_random_symmetric_pd_matrix(const int n = 4, cons
     return A;
 }
 
-pair<size_t, size_t> tester(int size, bool assume_psd = true, int iterations = 100,bool describe=false)
+
+
+pair<double, double> tester(int size, bool assume_psd = true, int iterations = 100, bool describe = false,int repeats=10)
 {
+    std::chrono::steady_clock::time_point START = std::chrono::steady_clock::now();
+    std::chrono::steady_clock::time_point END = std::chrono::steady_clock::now();
+
+    double new_time;
+    double moving_avg = 0, prev_moving_avg = 0;
+    double moving_std_dev = 0;
+
+    auto [A, iA, jA] = sparsify(generate_random_symmetric_pd_matrix(0));
+
     if (assume_psd)
     {
-        auto [A, iA, jA] = sparsify(generate_random_symmetric_pd_matrix(size));
-        vector<double> b = generate_random_b(A, iA, jA);
-
-        solver(A, iA, jA, b, describe, true, iterations);
+        tie(A, iA, jA) = sparsify(generate_random_symmetric_pd_matrix(size));
     }
     else
     {
-        auto [A, iA, jA] = sparsify(generate_random_matrix(size));
-        vector<double> b = generate_random_b(A, iA, jA);
-
-        solver(A, iA, jA, b, describe, false, iterations);
+        tie(A, iA, jA) = sparsify(generate_random_matrix(size));
     }
 
-    return {true,true};
+    vector<double> b = generate_random_b(A, iA, jA);
+
+    for (int i = 0; i < repeats; i++)
+
+    {
+        START = std::chrono::steady_clock::now();
+        solver(A, iA, jA, b, describe, assume_psd, iterations);
+        END = std::chrono::steady_clock::now();
+
+        new_time=std::chrono::duration_cast<std::chrono::microseconds>(END - START).count();
+        // cout<<new_time<<endl;
+
+        moving_avg = moving_avg + (new_time - moving_avg) / (i + 1);
+        moving_std_dev = moving_std_dev + (new_time - prev_moving_avg) * (new_time - moving_avg);
+        prev_moving_avg=moving_avg;
+    }
+
+    return {moving_avg, sqrt(moving_std_dev/(repeats-1))};//sample std dev
 }
