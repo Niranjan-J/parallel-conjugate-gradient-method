@@ -73,33 +73,85 @@ void sparse_matrix_transpose( vector<double> &A,  vector<int> &iA,vector<int> &j
 vector<double> &A_T,  vector<int> &iA_T,vector<int> &jA_T, bool describe = false){
     int i, j, k, l;
 
-    int n=iA.size();
+    int n=iA.size()-1;
     int nz=A.size();
+            cout<<__LINE__<<endl;
+
 
     for (i = 0; i <= n; i++)
         iA_T[i] = 0;
+            cout<<__LINE__<<endl;
+
 
     for (i = 0; i < nz; i++)
         iA_T[jA[i] + 1]++;
+            cout<<__LINE__<<endl;
+
 
     for (i = 0; i < n; i++)
         iA_T[i + 1] += iA_T[i];
+            cout<<__LINE__<<endl;
 
-    auto ptr = iA.begin();
 
-    for (i = 0; i < n; i++, ptr++)
-        for (j = *ptr; j < *(ptr + 1); j++)
+    // auto ptr = iA.begin();
+            cout<<__LINE__<<endl;
+
+
+    // for (i = 0; ptr!=iA.end() && i < n; i++, ptr++)
+    //     for (j = *ptr; ptr!=iA.end() && j < *(ptr + 1); j++)
+    //     {
+    //                     cout<<__LINE__<<endl;
+
+    //         k = jA[j];
+    //                     cout<<__LINE__<<endl;
+    //                     cout<<"k"<<k<<endl;
+
+    //         l = iA_T[k]++;
+    //                     cout<<__LINE__<<endl;
+    //                     cout<<"l"<<l-1<<endl;
+
+    //         jA_T[l] = i;
+    //                     cout<<__LINE__<<endl;
+
+    //         A_T[l] = A[j];
+    //                     cout<<__LINE__<<endl;
+
+    //     }
+
+    int ptr=0;
+    cout<<"n"<<n<<endl;
+
+            for (i = 0;   i < n; i++, ptr++)
+        for (j = iA[ptr];  ptr<n && j < iA[ptr + 1]; j++)
         {
+            cout<<ptr<<" "<<j<<" "<<iA[ptr]<<" "<<iA[ptr + 1]<<" ";
+                        cout<<__LINE__<<endl;
+
             k = jA[j];
+                        cout<<__LINE__<<endl;
+                        cout<<"k"<<k<<"jA"<<jA[j]<<endl;
+
             l = iA_T[k]++;
+                        cout<<__LINE__<<endl;
+                        cout<<"l"<<l-1<<endl;
+
             jA_T[l] = i;
+                        cout<<__LINE__<<endl;
+
             A_T[l] = A[j];
+                        cout<<__LINE__<<endl;
+
         }
+        
+            cout<<__LINE__<<endl;
 
     for (i = n; i > 0; i--)
         iA_T[i] = iA_T[i - 1];
+            cout<<__LINE__<<endl;
+
 
     iA_T[0] = 0;
+            cout<<__LINE__<<endl;
 
     if (describe)
     {
@@ -122,6 +174,8 @@ vector<double> &A_T,  vector<int> &iA_T,vector<int> &jA_T, bool describe = false
         }
         cout <<"\n\n";
     }
+            cout<<__LINE__<<endl;
+
 }
 
 //Checks for symmetric matrix

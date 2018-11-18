@@ -6,14 +6,17 @@
 
 #define element_limit 10
 
-vector<double> generate_random_b(const int n = 4)
+vector<double> generate_random_b(vector<double> &A, vector<int> &iA, vector<int> &jA)
 {
-    vector<double> b(n);
+    int n=iA.size()-1;
+    vector<double> b(n),x(n);
 #pragma omp parallel for
     for (int i = 0; i < n; i++)
     {
-        b[i] = rand() % 100;
+        x[i] = rand() % 100;
     }
+
+    MatVecMult(b, A, iA, jA, x, false);
     return b;
 }
 
@@ -155,29 +158,57 @@ vector<double> solver(vector<double> &A, vector<int> &iA, vector<int> &jA, vecto
         vector<double> A_T(A.size());
         vector<int> A_Trow(n + 1);
         vector<int> A_Tcol(A.size());
+        cout<<"N1"<<endl;
+        cout<<"iA"<<iA[3]<<endl;
+        for(auto u:iA)
+        cout<<u<<" ";
+        cout<<endl;
+        for(auto u:jA)
+        cout<<u<<" ";
+                cout<<endl;
+
+
+
         sparse_matrix_transpose(A, iA, jA, A_T, A_Trow, A_Tcol, true);
+        cout<<"N2"<<endl;
 
         if (!is_symmetric(A, A_T))
         {
+            cout<<"CNS"<<endl;
+
             //R=A^T*A (n x n)
             vector<double> R;
             vector<int> Rrow(n + 1);
             vector<int> Rcol;
+                    cout<<"N3"<<endl;
+
             A_TA(A_T, A_Trow, A_Tcol, R, Rrow, Rcol, true);
+                    cout<<"N4"<<endl;
+
 
             //q=A^T*b (n x 1)
             vector<double> q(n);
+                    cout<<"N5"<<endl;
+
             MatVecMult(q, A_T, A_Trow, A_Tcol, b, true);
+                    cout<<"N6"<<endl;
+
 
             //Solve
             start = clock();
             parallel_Conjugate_Gradient(x_out, R, Rrow, Rcol, q, x0, iterations, epsilon);
+                    cout<<"N7"<<endl;
+
             end = clock();
         }
         else
         {
+            cout<<"CS"<<endl;
+
             start = clock();
             parallel_Conjugate_Gradient(x_out, A, iA, jA, b, x0, iterations, epsilon);
+                    cout<<"N8"<<endl;
+
             end = clock();
         }
     }
@@ -203,7 +234,7 @@ vector<double> solver(vector<double> &A, vector<int> &iA, vector<int> &jA, vecto
         {
             cout << u << " ";
         }
-        cout<<endl;
+        cout << endl;
     }
 
     return x_out;
@@ -223,7 +254,7 @@ int main()
     // }
 
     auto [A, iA, jA] = sparsify(generate_random_symmetric_pd_matrix(3));
-    vector<double> b=generate_random_b(3); //TODO : random b
+    vector<double> b = generate_random_b(A,iA,jA); //TODO : random b
     // vector<double> b{16,-260,8};
     // vector<double> b{234,-23,1};
     // for(auto u:b)
@@ -233,13 +264,13 @@ int main()
 
     solver(A, iA, jA, b, true);
 
-    cout<<endl<<"Now with a non psd matrix"<<endl;
-
+    cout << endl
+         << "Now with a non psd matrix" << endl;
 
     tie(A, iA, jA) = sparsify(generate_random_matrix(3));
-    b=generate_random_b(3); //TODO : random b
+    b = generate_random_b(A,iA,jA); //TODO : random b
 
-    solver(A, iA, jA, b, true, false,100);
+    solver(A, iA, jA, b, true, false, 100);
 
     return 0;
 }
