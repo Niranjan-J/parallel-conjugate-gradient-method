@@ -9,7 +9,7 @@ vector<double> generate_random_b(vector<double> &A, vector<int> &iA, vector<int>
 #pragma omp parallel for
     for (int i = 0; i < n; i++)
     {
-        x[i] = rand() % 100;
+        x[i] = rand() % 10;
     }
 
     MatVecMult(b, A, iA, jA, x, false);
@@ -102,10 +102,12 @@ vector<vector<double>> generate_random_symmetric_pd_matrix(const int n = 4, cons
     return A;
 }
 
-
-
-pair<double, double> tester(int size, bool assume_psd = true, int iterations = 100, bool describe = false,int repeats=10)
+pair<double, double> tester(int size, bool assume_psd = true, int num_threads = 4, int iterations = 100, bool describe = false, int repeats = 10)
 {
+
+    // omp_set_dynamic(0); // Explicitly disable dynamic teams
+    omp_set_num_threads(num_threads);
+
     std::chrono::steady_clock::time_point START = std::chrono::steady_clock::now();
     std::chrono::steady_clock::time_point END = std::chrono::steady_clock::now();
 
@@ -115,31 +117,31 @@ pair<double, double> tester(int size, bool assume_psd = true, int iterations = 1
 
     auto [A, iA, jA] = sparsify(generate_random_symmetric_pd_matrix(0));
 
-    if (assume_psd)
-    {
-        tie(A, iA, jA) = sparsify(generate_random_symmetric_pd_matrix(size));
-    }
-    else
-    {
-        tie(A, iA, jA) = sparsify(generate_random_matrix(size));
-    }
-
-    vector<double> b = generate_random_b(A, iA, jA);
-
     for (int i = 0; i < repeats; i++)
 
     {
+
+        if (assume_psd)
+        {
+            tie(A, iA, jA) = sparsify(generate_random_symmetric_pd_matrix(size));
+        }
+        else
+        {
+            tie(A, iA, jA) = sparsify(generate_random_matrix(size));
+        }
+        vector<double> b = generate_random_b(A, iA, jA);
+
         START = std::chrono::steady_clock::now();
         solver(A, iA, jA, b, describe, assume_psd, iterations);
         END = std::chrono::steady_clock::now();
 
-        new_time=std::chrono::duration_cast<std::chrono::microseconds>(END - START).count();
+        new_time = std::chrono::duration_cast<std::chrono::microseconds>(END - START).count();
         // cout<<new_time<<endl;
 
         moving_avg = moving_avg + (new_time - moving_avg) / (i + 1);
         moving_std_dev = moving_std_dev + (new_time - prev_moving_avg) * (new_time - moving_avg);
-        prev_moving_avg=moving_avg;
+        prev_moving_avg = moving_avg;
     }
 
-    return {moving_avg, sqrt(moving_std_dev/(repeats-1))};//sample std dev
+    return {moving_avg, sqrt(moving_std_dev / (repeats - 1))}; //sample std dev
 }
