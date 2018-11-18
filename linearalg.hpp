@@ -261,11 +261,16 @@ void A_TA(vector<double> &A_T, vector<int> &iA_T, vector<int> &jA_T,
     }
 }
 
-
+bool check_proper_dims(vector<double> &A, vector<int> &iA, vector<int> &jA, vector<double> &b)
+{
+    return (A.size()==jA.size()) && ((iA.size() - 1)==b.size());
+}
 
 //wrapper over parallel_Conjugate_Gradient
 vector<double> solver(vector<double> &A, vector<int> &iA, vector<int> &jA, vector<double> &b, bool describe = false, bool assume_psd = true, const int iterations = 10, const double epsilon = 1e-5)
 {
+    assert(check_proper_dims(A,iA,jA,b));
+
     int n = iA.size() - 1;
     vector<double> x_out(n);
     // clock_t start, end;
