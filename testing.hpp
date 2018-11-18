@@ -2,6 +2,9 @@
 
 #define element_limit 10
 
+std::chrono::steady_clock::time_point START = std::chrono::steady_clock::now();
+std::chrono::steady_clock::time_point END = std::chrono::steady_clock::now();
+
 vector<double> generate_random_b(vector<double> &A, vector<int> &iA, vector<int> &jA)
 {
     int n = iA.size() - 1;
@@ -106,15 +109,15 @@ vector<double> solver(vector<double> &A, vector<int> &iA, vector<int> &jA, vecto
 {
     int n = iA.size() - 1;
     vector<double> x_out(n);
-    clock_t start, end;
+    // clock_t start, end;
 
     vector<double> x0(n, 1);
 
     if (assume_psd)
     {
-        start = clock();
+        START = std::chrono::steady_clock::now();
         parallel_Conjugate_Gradient(x_out, A, iA, jA, b, x0, iterations, epsilon);
-        end = clock();
+        END = std::chrono::steady_clock::now();
     }
     else
     {
@@ -141,18 +144,18 @@ vector<double> solver(vector<double> &A, vector<int> &iA, vector<int> &jA, vecto
             MatVecMult(q, A_T, A_Trow, A_Tcol, b);
 
             //Solve
-            start = clock();
+            START = std::chrono::steady_clock::now();
             parallel_Conjugate_Gradient(x_out, R, Rrow, Rcol, q, x0, iterations, epsilon);
 
-            end = clock();
+            END = std::chrono::steady_clock::now();
         }
         else
         {
 
-            start = clock();
+            START = std::chrono::steady_clock::now();
             parallel_Conjugate_Gradient(x_out, A, iA, jA, b, x0, iterations, epsilon);
 
-            end = clock();
+            END = std::chrono::steady_clock::now();
         }
     }
 
@@ -161,7 +164,7 @@ vector<double> solver(vector<double> &A, vector<int> &iA, vector<int> &jA, vecto
         cout << "Solution x :\n";
         for (int i = 0; i < x_out.size(); i++)
             cout << x_out[i] << endl;
-        cout << "\nExecution Time : " << double(end - start) / CLOCKS_PER_SEC << "\n\n";
+    std::cout << "\nExecution time (microsec) = " << (std::chrono::duration_cast<std::chrono::microseconds>(END - START).count()) << std::endl;
 
         vector<double> res(n);
         MatVecMult(res, A, iA, jA, x_out, false);
