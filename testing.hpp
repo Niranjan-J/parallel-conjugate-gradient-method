@@ -2,8 +2,6 @@
 
 #define element_limit 10
 
-
-
 vector<double> generate_random_b(vector<double> &A, vector<int> &iA, vector<int> &jA)
 {
     int n = iA.size() - 1;
@@ -104,3 +102,22 @@ vector<vector<double>> generate_random_symmetric_pd_matrix(const int n = 4, cons
     return A;
 }
 
+pair<size_t, size_t> tester(int size, bool assume_psd = true, int iterations = 100,bool describe=false)
+{
+    if (assume_psd)
+    {
+        auto [A, iA, jA] = sparsify(generate_random_symmetric_pd_matrix(size));
+        vector<double> b = generate_random_b(A, iA, jA);
+
+        solver(A, iA, jA, b, describe, true, iterations);
+    }
+    else
+    {
+        auto [A, iA, jA] = sparsify(generate_random_matrix(size));
+        vector<double> b = generate_random_b(A, iA, jA);
+
+        solver(A, iA, jA, b, describe, false, iterations);
+    }
+
+    return {true,true};
+}
