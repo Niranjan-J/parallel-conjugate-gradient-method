@@ -1,3 +1,7 @@
+/* Include guard*/
+#ifndef LINEARALG_INCLUDED
+#define LINEARALG_INCLUDED
+
 #include<bits/stdc++.h>
 #include<omp.h>
 using namespace std;
@@ -220,3 +224,6 @@ vector<double> &B, vector<int> &iB,vector<int> &jB,bool describe=false){
     }
 }
 
+
+
+#endif /* Include guard*/
