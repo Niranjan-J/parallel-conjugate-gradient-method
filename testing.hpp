@@ -2,8 +2,7 @@
 
 #define element_limit 10
 
-std::chrono::steady_clock::time_point START = std::chrono::steady_clock::now();
-std::chrono::steady_clock::time_point END = std::chrono::steady_clock::now();
+
 
 vector<double> generate_random_b(vector<double> &A, vector<int> &iA, vector<int> &jA)
 {
@@ -105,83 +104,3 @@ vector<vector<double>> generate_random_symmetric_pd_matrix(const int n = 4, cons
     return A;
 }
 
-vector<double> solver(vector<double> &A, vector<int> &iA, vector<int> &jA, vector<double> &b, bool describe = false, bool assume_psd = true, const int iterations = 10, const double epsilon = 1e-5)
-{
-    int n = iA.size() - 1;
-    vector<double> x_out(n);
-    // clock_t start, end;
-
-    vector<double> x0(n, 1);
-
-    if (assume_psd)
-    {
-        START = std::chrono::steady_clock::now();
-        parallel_Conjugate_Gradient(x_out, A, iA, jA, b, x0, iterations, epsilon);
-        END = std::chrono::steady_clock::now();
-    }
-    else
-    {
-
-        vector<double> A_T(A.size());
-        vector<int> A_Trow(n + 1);
-        vector<int> A_Tcol(A.size());
-
-        sparse_matrix_transpose(A, iA, jA, A_T, A_Trow, A_Tcol);
-
-        if (!is_symmetric(A, A_T))
-        {
-
-            //R=A^T*A (n x n)
-            vector<double> R;
-            vector<int> Rrow(n + 1);
-            vector<int> Rcol;
-
-            A_TA(A_T, A_Trow, A_Tcol, R, Rrow, Rcol);
-
-            //q=A^T*b (n x 1)
-            vector<double> q(n);
-
-            MatVecMult(q, A_T, A_Trow, A_Tcol, b);
-
-            //Solve
-            START = std::chrono::steady_clock::now();
-            parallel_Conjugate_Gradient(x_out, R, Rrow, Rcol, q, x0, iterations, epsilon);
-
-            END = std::chrono::steady_clock::now();
-        }
-        else
-        {
-
-            START = std::chrono::steady_clock::now();
-            parallel_Conjugate_Gradient(x_out, A, iA, jA, b, x0, iterations, epsilon);
-
-            END = std::chrono::steady_clock::now();
-        }
-    }
-
-    if (describe)
-    {
-        cout << "Solution x :\n";
-        for (int i = 0; i < x_out.size(); i++)
-            cout << x_out[i] << endl;
-    std::cout << "\nExecution time (microsec) = " << (std::chrono::duration_cast<std::chrono::microseconds>(END - START).count()) << std::endl;
-
-        vector<double> res(n);
-        MatVecMult(res, A, iA, jA, x_out, false);
-
-        cout << "original b is:" << endl;
-        for (auto u : b)
-        {
-            cout << u << " ";
-        }
-        cout << endl
-             << "b_res is:" << endl;
-        for (auto u : res)
-        {
-            cout << u << " ";
-        }
-        cout << endl;
-    }
-
-    return x_out;
-}
