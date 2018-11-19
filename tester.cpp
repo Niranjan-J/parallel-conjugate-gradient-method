@@ -10,8 +10,6 @@ std::string GetCurrentTimeForFileName()
     return s;
 }
 
-
-
 int main()
 {
     // auto [avg, std_dev] = tester(6000, true, 4, 100, false);
@@ -19,7 +17,7 @@ int main()
     // tie(avg, std_dev) = tester(3, false);
     // cout << avg << " " << std_dev << endl;
 
-    std::ofstream output("test_results"+GetCurrentTimeForFileName()+".txt");
+    std::ofstream output("test_results" + GetCurrentTimeForFileName() + ".txt");
 
     // ofstream output("test_results.txt");
 
