@@ -102,7 +102,7 @@ vector<vector<double>> generate_random_symmetric_pd_matrix(const int n = 4, cons
     return A;
 }
 
-pair<double, double> tester(int size, bool assume_psd = true, int num_threads = 4, int iterations = 100, bool describe = false, int repeats = 10)
+pair<double, double> tester(int size, bool assume_psd = true, int num_threads = 4, int iterations = 100, bool describe = false, int repeats = 10,const double sparse_proportion = 0.5)
 {
 
     // omp_set_dynamic(0); // Explicitly disable dynamic teams
@@ -123,11 +123,11 @@ pair<double, double> tester(int size, bool assume_psd = true, int num_threads = 
 
         if (assume_psd)
         {
-            tie(A, iA, jA) = sparsify(generate_random_symmetric_pd_matrix(size));
+            tie(A, iA, jA) = sparsify(generate_random_symmetric_pd_matrix(size,sparse_proportion));
         }
         else
         {
-            tie(A, iA, jA) = sparsify(generate_random_matrix(size));
+            tie(A, iA, jA) = sparsify(generate_random_matrix(size,sparse_proportion));
         }
         vector<double> b = generate_random_b(A, iA, jA);
 
