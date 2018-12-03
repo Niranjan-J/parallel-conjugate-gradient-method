@@ -1,5 +1,7 @@
-#include "linearalg.hpp"
-#include "testing.hpp"
+//g++ tester.cpp -fopenmp -std=c++1z
+//requires c++ 17
+#include "my_library.hpp"
+#include "my_testing_library.hpp"
 std::string GetCurrentTimeForFileName()
 {
     auto time = std::time(nullptr);

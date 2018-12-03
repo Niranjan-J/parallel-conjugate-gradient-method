@@ -1,4 +1,4 @@
-#include "linearalg.hpp"
+#include "my_library.hpp"
 
 int main()
 {
@@ -71,6 +71,8 @@ int main()
             output << u << " ";
         output << endl;
     }
+    
+    cout<<endl<<"Output has been written to output.txt"<<endl;
 
     return 0;
 }
