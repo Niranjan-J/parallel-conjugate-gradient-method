@@ -1,5 +1,6 @@
-# Parallel-Computing-Project
-Parallel implementation of an iterative algorithm for conjugate gradient method.
+# Parallel Conjugate Gradient Method
+Parallel implementation of an iterative algorithm for conjugate gradient method.\
+CS 359: Parallel Computing Project
 
 ## Notes about our implementation
 
